@@ -34,22 +34,13 @@
         </p>
       </div>
     </div>
-
-    <!-- Notifications -->
-    <div class="lovebell-notifications" v-if="notifications.length > 0">
-      <div v-for="notification in notifications" :key="notification.id" :class="['lovebell-notification', notification.type]">
-        <i :class="iconClass(notification.type)" :style="iconStyle(notification.type)"></i>
-        <span class="lovebell-message">{{ notification.message }}</span>
-        <button @click="closeNotification(notification.id)">×</button>
-        <div :class="['lovebell-progress-bar', notification.type]"></div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script>
 // Import dịch vụ đã tạo
 import { sendResetPasswordRequest } from '@/services/forgot-password-service';
+import { ElNotification } from "element-plus";
 
 export default {
   name: 'LovebellForgotPasswordPage',
@@ -61,26 +52,39 @@ export default {
   },
   methods: {
     async sendResetLink() {
-      if (!this.email) {
-        this.addNotification('Please enter your email!', 'error');
-        return;
-      }
+    if (!this.email) {
+      ElNotification({
+        title: "Error",
+        message: "Please enter your email!",
+        type: "error",
+      });
+      return;
+    }
 
-      try {
-        // Gọi dịch vụ gửi yêu cầu reset mật khẩu
-        const response = await sendResetPasswordRequest(this.email);
-        
-        // Xử lý phản hồi thành công
-        if (response.status === 200) {
-          this.addNotification('Reset password successfully! Please check your email.', 'success');
-        } else {
-          this.addNotification('Error reset password!', 'error');
-        }
-      } catch (error) {
-        // Xử lý lỗi khi gửi yêu cầu
-        this.addNotification(error.message, 'error');
+    try {
+      const response = await sendResetPasswordRequest(this.email);
+
+      if (response.status === 200) {
+        ElNotification({
+          title: "Success",
+          message: "Reset password successfully! Please check your email.",
+          type: "success",
+        });
+      } else {
+        ElNotification({
+          title: "Error",
+          message: "Error reset password!",
+          type: "error",
+        });
       }
-    },
+    } catch (error) {
+      ElNotification({
+        title: "Error",
+        message: error.message,
+        type: "error",
+      });
+    }
+  },
     goToLogin() {
       this.$router.push('/');
     },
@@ -128,12 +132,12 @@ export default {
 </script>
 
 <style scoped>
-/* Thay đổi màu nền của toàn bộ trang */
 body {
   background-color: #ffb3c1;
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
+  animation: fadeInBackground 2s ease-in-out;
 }
 
 .lovebell-forgot-password-page-container {
@@ -143,6 +147,7 @@ body {
   align-items: center;
   gap: 20px;
   background-color: #ff85a1;
+  animation: slideInUp 1.5s ease-in-out;
 }
 
 .lovebell-white-container {
@@ -151,6 +156,24 @@ body {
   border-radius: 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   padding: 50px;
+  animation: zoomIn 1.2s ease;
+}
+
+.lovebell-logo img {
+  width: 300px;
+  height: auto;
+  margin-bottom: 40px;
+  animation: bounceIn 1.5s ease;
+  animation: pulse 0.8s infinite;
+
+}
+
+h1 {
+  color: #ff4d95;
+  font-size: 36px;
+  margin: 10px 0;
+  text-align: center;
+  animation: fadeInText 1.5s ease;
 }
 
 .lovebell-form-container {
@@ -159,19 +182,7 @@ body {
   padding: 20px;
   background-color: #fff;
   border-radius: 10px;
-}
-
-.lovebell-logo img {
-  width: 300px; /* Điều chỉnh kích thước hình ảnh */
-  height: auto;
-  margin-bottom: 40px;
-}
-
-h1 {
-  color: #ff4d95;
-  font-size: 36px; /* Kích thước chữ logo */
-  margin: 10px 0;
-  text-align: center;
+  animation: slideInFromLeft 1.5s ease;
 }
 
 h2 {
@@ -190,7 +201,6 @@ p {
   width: 100%;
   padding: 10px;
   margin-bottom: 15px;
-  margin-left: 20px;
   border-radius: 5px;
   border: 1px solid #ddd;
   font-size: 16px;
@@ -206,10 +216,14 @@ p {
   border-radius: 5px;
   font-size: 16px;
   cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: slideInUp 1.2s ease-in-out;
 }
 
 .lovebell-send-reset-link-button:hover {
   background-color: #ed94b8;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(255, 77, 149, 0.3);
 }
 
 .lovebell-back-to-login {
@@ -223,89 +237,86 @@ p {
   color: #ff4d95;
   text-decoration: none;
   cursor: pointer;
+  transition: color 0.3s ease;
 }
 
 .lovebell-login-link:hover {
+  color: #ed94b8;
   text-decoration: underline;
 }
 
-/* Notification styles */
-.lovebell-notifications {
-  max-width: 400px;
-  position: absolute;
-  top: 30px;
-  right: 30px;
-  display: flex;
-  align-items: flex-end;
-  flex-direction: column;
-  overflow: hidden;
-  padding: 20px;
-}
-
-.lovebell-notification {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 4px;
-  background-color: #fff; /* White background */
-  border: 2px solid #000; /* Black border */
-  position: relative;
-  overflow: hidden;
-}
-
-.lovebell-notification i {
-  margin-right: 10px;
-  font-size: 20px;
-  font-weight: bold;
-}
-
-.lovebell-message {
-  color: #000; /* Black text */
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: bold;
-  font-size: 16px;
-}
-
-button {
-  background: none;
-  border: none;
-  color: #000;
-  font-size: 20px; /* Increase size of the close button */
-  cursor: pointer;
-  margin-left: 20px; /* Move close button further to the right */
-}
-
-/* Progress bar at the bottom */
-.lovebell-progress-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 5px;
-  width: 100%;
-  animation: progress 5000ms linear forwards;
-}
-
-/* Colors for the progress bar based on notification type */
-.success.lovebell-progress-bar {
-  background-color: #4caf50; /* Green progress bar for success */
-}
-
-.error.lovebell-progress-bar {
-  background-color: #f44336; /* Red progress bar for error */
-}
-
-.warning.lovebell-progress-bar {
-  background-color: #ff9800; /* Yellow progress bar for warning */
-}
-
-/* Animation for progress bar countdown */
-@keyframes progress {
+/* CSS Animations */
+@keyframes fadeInBackground {
   from {
-    width: 100%;
+    opacity: 0;
   }
   to {
-    width: 0;
+    opacity: 1;
   }
 }
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInText {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-200px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 </style>

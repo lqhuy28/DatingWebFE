@@ -3,9 +3,9 @@
     <!-- Sidebar -->
     <LoveBellSidebar />
 
-    <!-- Phần chi tiết cafe -->
+    <!-- Cafe Details Section -->
     <div class="cafe-details">
-      <!-- Phần địa điểm liên quan -->
+      <!-- Related Places Section -->
       <div class="related-places">
         <h2>RELATED DATING PLACE</h2>
         <div class="places-grid">
@@ -44,7 +44,7 @@
 
 <script>
 import LoveBellSidebar from "@/views/sidebar/LoveBellSidebar.vue";
-import {getAllCafes} from "@/services/cafe-service"; // Import the service
+import { getAllCafes } from "@/services/cafe-service";
 
 export default {
   components: {
@@ -52,21 +52,18 @@ export default {
   },
   data() {
     return {
-      cafesPerPage: 4,  // Số lượng quán cafe trên mỗi trang
-      currentPage: 1,   // Trang hiện tại
-      selectedPlace: null,  // Quán cafe được chọn để hiển thị chi tiết
-      relatedPlaces: [],  // Đây sẽ là danh sách được lấy từ API
+      cafesPerPage: 5,
+      currentPage: 1,
+      selectedPlace: null,
+      relatedPlaces: [],
     };
   },
   computed: {
-    // Tổng số trang
     totalPages() {
       return Math.ceil(this.relatedPlaces.length / this.cafesPerPage);
     },
-
-    // Các quán cafe trên trang hiện tại
     paginatedPlaces() {
-      if (!this.relatedPlaces || this.relatedPlaces.length === 0) return []; // Ensure relatedPlaces is defined and not empty
+      if (!this.relatedPlaces || this.relatedPlaces.length === 0) return [];
       const start = (this.currentPage - 1) * this.cafesPerPage;
       const end = start + this.cafesPerPage;
       return this.relatedPlaces.slice(start, end);
@@ -74,160 +71,159 @@ export default {
   },
   methods: {
     viewDetails(place) {
-      this.selectedPlace = place;  // Gán quán cafe được chọn vào `selectedPlace`
+      this.selectedPlace = place;
     },
-
-    // Chuyển đến trang trước
     prevPage() {
       if (this.currentPage > 1) {
         this.currentPage--;
       }
     },
-
-    // Chuyển đến trang tiếp theo
     nextPage() {
       if (this.currentPage < this.totalPages) {
         this.currentPage++;
       }
     },
-
-    // Đóng modal
     closeModal() {
       this.selectedPlace = null;
     },
     async fetchCafes() {
       try {
-        const cafes = await getAllCafes();  // Gọi hàm lấy tất cả các quán cafe từ API
-        this.relatedPlaces = cafes;  // Gán dữ liệu vào biến relatedPlaces để hiển thị
+        const cafes = await getAllCafes();
+        this.relatedPlaces = cafes;
       } catch (error) {
         console.error(error.message);
       }
     },
     formatPriceRange(min, max) {
-      return `${min} VND - ${max} VND`;  // Định dạng giá cả
+      return `${min} VND - ${max} VND`;
     },
   },
   mounted() {
-    this.fetchCafes();  // Gọi API khi component được render
+    this.fetchCafes();
   },
 };
 </script>
 
 <style scoped>
-/* Container chứa cả sidebar và phần chính */
+/* Container for Sidebar and Main Content */
 .container_cafe {
   display: flex;
   align-items: flex-start;
-  background-color: #f5f5f5;
-  overflow: hidden;
+  background-color: #f8f8f8;
 }
 
-/* Phần chính chiếm 80% chiều rộng */
+/* Cafe Details Section */
 .cafe-details {
   overflow-y: scroll;
   height: calc(100vh - 56px);
   flex: 4;
-  padding: 40px;
+  padding: 30px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.related-places {
-  margin-top: 50px;
-}
-
+/* Related Places Title */
 .related-places h2 {
-  font-size: 32px;
-  margin-top: -50px;
-  margin-bottom: 50px;
-  color: #ff33cc;
   text-align: center;
+  margin-bottom: 40px;
+  animation: fadeIn 1s ease;
+  font-weight: bold;
+  color: #ff6699;
+  font-size: 36px;
 }
 
+/* Grid for Places */
 .places-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
 }
 
+/* Individual Place Card */
 .place-card {
-  background-color: white;
+  background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
   text-align: center;
-  width: 100%;
-  height: 450px;
+  cursor: pointer;
 }
 
 .place-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  transform: scale(1.05);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
+/* Place Image */
 .place-image {
-  width: 500px;
-  height: 200px;
+  width: 100%;
+  height: 180px;
   object-fit: cover;
+  transition: opacity 0.3s;
 }
 
 .place-info {
-  padding: 10px;
+  padding: 15px;
 }
 
+/* Place Info Text */
 .place-info h3 {
-  font-size: 22px;
+  font-size: 20px;
   color: #333;
 }
 
 .place-info p {
-  font-size: 16px;
-  color: #555;
+  font-size: 14px;
+  color: #777;
   margin: 5px 0;
 }
 
+/* Price Styling */
 .place-info .price {
-  color: #ff33cc;
-  font-size: 18px;
+  color: #ff4081;
+  font-size: 16px;
   font-weight: bold;
   margin-top: 10px;
 }
 
+/* View Button */
 .view-button {
-  background-color: #ff33cc;
+  background-color: #ff4081;
   color: white;
   border: none;
-  padding: 10px 20px;
+  padding: 8px 15px;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  margin-top: 10px;
 }
 
 .view-button:hover {
-  background-color: #ff66ff;
+  background-color: #ff80ab;
 }
 
-/* Pagination */
+/* Pagination Controls */
 .pagination {
-  margin-top: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 30px;
 }
 
 .pagination button {
-  background-color: #ff33cc;
+  background-color: #e91e63;
   color: white;
   border: none;
   padding: 10px 20px;
   margin: 0 10px;
   cursor: pointer;
   border-radius: 5px;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
 .pagination button:hover {
-  background-color: #ff66ff;
+  background-color: #f06292;
+  transform: scale(1.05);
 }
 
 .pagination button:disabled {
@@ -240,17 +236,18 @@ export default {
   color: #333;
 }
 
-/* Modal Styles */
+/* Modal Popup Styling */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
   align-items: center;
+  animation: fadeIn 0.5s ease;
 }
 
 .modal-content {
@@ -260,11 +257,13 @@ export default {
   width: 400px;
   text-align: center;
   position: relative;
+  animation: slideDown 0.6s ease;
 }
 
 .modal-image {
   width: 100%;
   height: auto;
+  border-radius: 5px;
   margin-bottom: 20px;
 }
 
@@ -276,5 +275,26 @@ export default {
   border: none;
   font-size: 24px;
   cursor: pointer;
+}
+
+/* Keyframe Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 </style>

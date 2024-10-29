@@ -19,6 +19,7 @@ export async function loadRandomProfile() {
         age: response.data.data.age,
         bio: response.data.data.bio,
         imageUrl: response.data.data.avatar || response.data.data.imageUrl, // Adjust based on actual API response
+        photos: response.data.data.photos || [],
       };
 
       return [profile]; // Return the profile in an array format to keep the rest of the code compatible

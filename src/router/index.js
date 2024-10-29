@@ -20,7 +20,14 @@ import ManageCafes from "@/views/admin/ManageCafes.vue";
 import ManageUsers from "@/views/admin/ManageUsers.vue";
 import ManageContacts from "@/views/admin/ManageContacts.vue";
 import ManageMatches from "@/views/admin/ManageMatches.vue";
+import ManagePayments from "@/views/admin/ManagePayments.vue";
 import GetLocation from "@/views/GetLocation.vue";
+import ManageSubscriptionPlans from "@/views/admin/ManageSubscriptionPlans.vue";
+import PackagePremiumPage from "@/views/PackagePremiumPage.vue";
+import ManageMaps from "@/views/admin/ManageMaps.vue";
+import ManageStatistics from "@/views/admin/ManageStatistics.vue";
+import ManageUserSubscriptions from "@/views/admin/ManageUserSubscriptions.vue";
+import LikedBy from "@/views/LikedBy.vue";
 
 const routes = [
   {
@@ -104,6 +111,16 @@ const routes = [
     component: SuccessToast,
   },
   {
+    path: "/packagePremiumPage",
+    name: "packagePremiumPage",
+    component: PackagePremiumPage,
+  },
+  {
+    path: "/likedBy",
+    name: "likedBy",
+    component: LikedBy,
+  },
+  {
     path: '/admin',
     name: 'AdminDashboard',
     component: AdminDashboard,
@@ -137,6 +154,31 @@ const routes = [
         path: 'matches',
         component: ManageMatches, // Đường dẫn đến component quản lý matches,
         meta: { breadcrumb: 'Manage Matches' }
+      },
+      {
+        path: 'payments',
+        component: ManagePayments, // Đường dẫn đến component quản lý payments,
+        meta: { breadcrumb: 'Manage Payments' }
+      },
+      {
+        path: 'subscriptionplans',
+        component: ManageSubscriptionPlans, // Đường dẫn đến component quản lý Packages,
+        meta: { breadcrumb: 'Manage SubscriptionPlans' }
+      },
+      {
+        path: 'usersubscriptions',
+        component: ManageUserSubscriptions, // Đường dẫn đến component quản lý Statistics,
+        meta: { breadcrumb: 'Manage UserSubscriptions' }
+      },
+      {
+        path: 'maps',
+        component: ManageMaps, // Đường dẫn đến component quản lý Maps,
+        meta: { breadcrumb: 'Manage Maps' }
+      },
+      {
+        path: 'statistics',
+        component: ManageStatistics, // Đường dẫn đến component quản lý Statistics,
+        meta: { breadcrumb: 'Manage Statistics' }
       },
     ],
   }];

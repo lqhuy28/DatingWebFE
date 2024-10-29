@@ -1,14 +1,13 @@
 <template>
   <div>
     <div style="display: flex; justify-content: space-between; align-items: center;">
-      <h1>Manage Matches</h1>
-
+      <h1>Manage Maps</h1>
       <!-- Search bar -->
       <el-input
           v-model="searchQuery"
-          placeholder="Search by User1 Email or User2 Email"
+          placeholder="Search by Email, Phone"
           style="width: 300px;"
-          @input="filterMatches"
+          @input="filterUsers"
       >
         <template #prepend>
           <el-button :icon="Search" />
@@ -19,41 +18,36 @@
     <table>
       <thead>
       <tr>
-        <th>Match ID</th>
-        <th>User 1</th>
-        <th>User 1 Location</th>
-        <th>User 2</th>
-        <th>User 2 Location</th>
-        <th>Created At</th>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Name</th>
+        <th>Address</th>
+        <th>Status</th>
+        <th>Role Name</th>
+        <th>Package Name</th>
+        <th style="width: 250px">Operations</th>
       </tr>
       </thead>
       <tbody>
-        <tr
-            v-for="match in filteredMatches"
-            :key="match.matchId"
-            style="cursor: pointer;"
-        >
-          <td>{{ match.matchId }}</td>
-          <td>
-            <a @click.stop="fetchUserDetails(match.user1Id)" class="clickable">
-              {{ match.user1Email }}
-            </a>
-            <span v-if="match.user1Name"> - {{ match.user1Name }}</span>
-          </td>
-          <td>{{ match.user1Location }}</td>
-          <td>
-            <a @click.stop="fetchUserDetails(match.user2Id)" class="clickable">
-              {{ match.user2Email }}
-            </a>
-            <span v-if="match.user2Name"> - {{ match.user2Name }}</span>
-          </td>
-          <td>{{ match.user2Location }}</td>
-          <td>{{ formatSubmissionDate(match.createdAt) }}</td>
-        </tr>
+      <tr v-for="user in filteredUsers" :key="user.userId">
+        <td>{{ user.userId }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.name }}</td>
+        <td>{{ user.address }}</td>
+        <td>{{ user.status }}</td>
+        <td>{{ user.roleName }}</td>
+        <td>{{ user.packageName }}</td>
+        <td>
+          <el-button type="primary" @click="viewUserDetails(user)">View Details</el-button>
+          <el-button type="danger" @click="lockOrUnLockUser(user.userId)">
+            {{ user.status === 'INACTIVE' ? 'Activate' : 'Deactivate' }}
+          </el-button>
+        </td>
+      </tr>
       </tbody>
     </table>
 
-    <!-- User Details Dialog -->
+    <!-- User Details Modal -->
     <el-dialog v-model="isDialogVisible" width="50%" title="User Details">
       <div v-if="selectedUser">
         <el-form label-position="top">
@@ -69,19 +63,7 @@
               </el-form-item>
             </el-col>
           </el-row>
-
-          <el-row :gutter="20">
-            <el-col :span="12">
-              <el-form-item label="Name">
-                <el-input v-model="selectedUser.name" disabled />
-              </el-form-item>
-            </el-col>
-            <el-col :span="12">
-              <el-form-item label="Address">
-                <el-input v-model="selectedUser.address" disabled />
-              </el-form-item>
-            </el-col>
-          </el-row>
+          <!-- Additional form fields here -->
 
           <el-row :gutter="20">
             <el-col :span="12">
@@ -147,67 +129,66 @@
 
 <script setup>
 import {onMounted, ref, computed} from 'vue';
-import {ElMessage} from 'element-plus';
-import {getAllMatches} from '@/services/admin/admin-match-service'; // Update with actual service paths
-import {getUserById} from '@/services/admin/admin-user-service'; // Update with actual service paths
+import {ElMessage, ElNotification} from 'element-plus';
+import {
+  getAllUsers,
+  lockOrUnLockUser as lockOrUnLockUserAPI
+} from '@/services/admin/admin-user-service';
 import {Search} from "@element-plus/icons-vue";
-import {format} from "date-fns";
 
-const matches = ref([]);
+const users = ref([]);
 const searchQuery = ref('');
 const isDialogVisible = ref(false);
 const selectedUser = ref(null);
 
-// Filter matches based on search query
-const filteredMatches = computed(() => {
+// Computed property to filter users based on search
+const filteredUsers = computed(() => {
   const query = searchQuery.value.toLowerCase();
-  return matches.value.filter(match =>
-      match.user1Email.toString().includes(query) ||
-      match.user2Email.toString().includes(query)
+  return users.value.filter(user =>
+      user.email.toLowerCase().includes(query) ||
+      user.name?.toLowerCase().includes(query)
   );
 });
 
-// Fetch matches when component is mounted
+// Load users when component is mounted
 onMounted(async () => {
-  await fetchMatches();
+  await fetchUsers();
 });
 
-// Fetch all matches
-const fetchMatches = async () => {
+// Fetch users
+const fetchUsers = async () => {
   try {
-    matches.value = await getAllMatches();
+    users.value = await getAllUsers();
   } catch (error) {
-    ElMessage.error('Failed to fetch matches. Please try again later.');
+    ElMessage.error('Failed to fetch users. Please try again later.');
   }
 };
 
-// Fetch user details on email click
-const fetchUserDetails = async (id) => {
-  try {
-    selectedUser.value = await getUserById(id); // Fetch user details based on email
-    isDialogVisible.value = true;
-  } catch (error) {
-    console.log(error)
-    ElMessage.error('Failed to fetch user details.');
+// Toggle user status (Activate/Deactivate)
+const lockOrUnLockUser = async (id) => {
+  const action = users.value.find(user => user.userId === id).status === 'INACTIVE' ? 'Activate' : 'Deactivate';
+  if (confirm(`Are you sure you want to ${action} this user?`)) {
+    try {
+      await lockOrUnLockUserAPI(id);
+      await fetchUsers();
+      ElNotification({
+        title: 'Success',
+        message: `User successfully ${action}d.`,
+        type: 'success',
+      });
+    } catch (error) {
+      ElNotification({
+        title: 'Error',
+        message: error?.message,
+        type: 'error',
+      });
+    }
   }
 };
 
-// Format the date
-const formatSubmissionDate = (dateString) => {
-  if (!dateString) return '-'; // Handle null or undefined dates
-  return format(new Date(dateString), 'MMMM dd, yyyy HH:mm'); // Format: October 15, 2024 14:30
+// View user details
+const viewUserDetails = (user) => {
+  selectedUser.value = user;
+  isDialogVisible.value = true;
 };
 </script>
-
-<style scoped>
-a.clickable {
-  color: #3498db !important; /* Initial color for the link */
-  text-decoration: none !important; /* Remove underline */
-  transition: color 0.3s ease !important; /* Smooth transition for hover effect */
-}
-
-a.clickable:hover {
-  color: #2ecc71 !important; /* Change color on hover */
-  text-decoration: underline !important; /* Underline on hover */
-}
-</style>

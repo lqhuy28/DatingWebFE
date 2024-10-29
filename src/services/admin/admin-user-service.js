@@ -17,12 +17,12 @@ export const getAllUsers = async () => {
 // Hàm lấy thông tin người dùng theo ID
 export const getUserById = async (id) => {
     try {
-        const response = await instance.get(`/admin/users/${id}`, {
+        const response = await instance.get(`/admin/user/${id}`, {
             headers: {
                 Authorization: `Bearer ${localStorage.getItem('userToken')}`, // Gửi token trong header
             },
         });
-        return response.data; // Trả về data nếu API trả về đúng định dạng
+        return response.data?.data; // Trả về data nếu API trả về đúng định dạng
     } catch (error) {
         throw error.response ? error.response.data : { message: 'An error occurred while fetching user' };
     }
@@ -41,3 +41,22 @@ export const lockOrUnLockUser = async (id) => {
         throw error.response ? error.response.data : { message: 'An error occurred while updating user' };
     }
 };
+
+// Hàm thay đổi gói của người dùng
+export const changeUserPackageAPI = async (userId, planId) => {
+    try {
+        const response = await instance.put(
+          `/admin/user/${userId}/change-package`,
+          { planId: planId },
+          {
+              headers: {
+                  Authorization: `Bearer ${localStorage.getItem('userToken')}`, // Gửi token trong header
+              },
+          }
+        );
+        return response.data?.data; // Trả về data nếu API trả về đúng định dạng
+    } catch (error) {
+        throw error.response ? error.response.data : { message: 'An error occurred while changing user package' };
+    }
+};
+

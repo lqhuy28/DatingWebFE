@@ -160,6 +160,7 @@ body {
   align-items: center; /* Căn giữa nội dung theo chiều dọc */
   gap: 20px; /* Khoảng cách giữa các phần tử */
   background-color: #ff85a1; /* Màu hồng đậm hơn, tương tự ảnh */
+  animation: fadeInBackground 1s ease-in-out;
 }
 
 .lovebell-logo-container {
@@ -170,14 +171,18 @@ body {
   border-radius: 10px; /* Bo góc cho phần logo */
   padding: 20px; /* Thêm padding cho phần logo */
   margin-right: 20px; /* Khoảng cách bên phải */
+  animation: bounce 2s infinite;
+
 }
 .lovebell-white-container {
   display: flex;
+  
   background-color: #fff; /* Nền trắng cho cả khung */
   border-radius: 20px; /* Bo góc cho khung */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Thêm hiệu ứng đổ bóng */
   padding: 50px; /* Padding cho khung trắng */
   margin-bottom: 50px;
+  animation: slideInUp 1.2s ease-in-out;
 }
 .lovebell-logo img {
   width: 300px; /* Điều chỉnh kích thước hình ảnh */
@@ -190,6 +195,7 @@ body {
   font-size: 36px; /* Kích thước chữ logo */
   margin: 10px 0;
   text-align: center;
+  animation: fadeInText 1.5s ease;
 }
 
 .lovebell-form-container {
@@ -203,61 +209,118 @@ body {
   text-align: center;
 }
 
+/* Input fields */
 .lovebell-email-input,
 .lovebell-password-input {
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   margin-bottom: 15px;
-  border-radius: 5px;
+  border-radius: 8px;
   border: 1px solid #ddd;
   font-size: 16px;
+  transition: box-shadow 0.3s ease;
 }
 
+.lovebell-email-input:focus,
+.lovebell-password-input:focus {
+  box-shadow: 0 0 8px rgba(255, 77, 149, 0.5);
+  border: 1px solid #ff4d95;
+}
+
+/* Forgot password link */
 .lovebell-forgot-password {
   color: #999;
   font-size: 12px;
   text-align: right;
   cursor: pointer;
-  margin-bottom: 10px; /* Khoảng cách phía trên */
-  text-decoration: underline; /* Thêm gạch chân cho link */
+  margin-bottom: 20px;
+  text-decoration: underline;
+  transition: color 0.3s ease;
 }
 
 .lovebell-forgot-password:hover {
-  color: #ff4d95; /* Thay đổi màu khi hover */
+  color: #ff4d95;
 }
 
-.lovebell-sign-up-email-button {
+/* Button styles */
+.lovebell-sign-up-email-button,
+.lovebell-google-login-button,
+.lovebell-phone-login-button,
+.lovebell-facebook-login-button {
   width: 100%;
   padding: 15px;
-  margin-bottom: 5px;
-  background-color: #ff4d95;
+  margin-bottom: 10px;
   color: white;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   font-size: 16px;
   cursor: pointer;
-}
-.lovebell-sign-up-email-button:hover {
-  color: #ed94b8;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Email login button */
+.lovebell-sign-up-email-button {
+  background-color: #ff4d95;
+}
+
+.lovebell-sign-up-email-button:hover {
+  background-color: #ed94b8;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 16px rgba(255, 77, 149, 0.3);
+}
+
+/* Google login button */
+.lovebell-google-login-button {
+  background-color: #d0d0d0;
+  color: #555;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lovebell-google-login-button:hover {
+  background-color: #e5e5e5;
+}
+
+/* Phone login button */
+.lovebell-phone-login-button {
+  background-color: #333;
+}
+
+.lovebell-phone-login-button:hover {
+  background-color: #555;
+}
+
+/* Facebook login button */
+.lovebell-facebook-login-button {
+  background-color: #3b5998;
+}
+
+.lovebell-facebook-login-button:hover {
+  background-color: #4b6bbd;
+}
+
+/* Don't have account */
 .lovebell-dont-have-account {
   color: #999;
   font-size: 14px;
   text-align: center;
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
 .lovebell-login-link {
   color: #ff4d95;
   text-decoration: none;
   cursor: pointer;
+  transition: color 0.3s ease;
 }
 
 .lovebell-login-link:hover {
+  color: #ed94b8;
   text-decoration: underline;
 }
 
+/* Separator */
 .lovebell-separator {
   display: flex;
   align-items: center;
@@ -279,40 +342,7 @@ body {
   padding: 0 10px;
 }
 
-.lovebell-google-login-button,
-.lovebell-phone-login-button,
-.lovebell-facebook-login-button {
-  width: 100%;
-  padding: 15px;
-  margin-bottom: 15px;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.lovebell-google-login-button {
-  background-color: #d0d0d0;
-  color: #555;
-  border: 1px solid #ddd;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.lovebell-google-login-button img {
-  margin-right: 10px;
-}
-
-.lovebell-phone-login-button {
-  background-color: black;
-}
-
-.lovebell-facebook-login-button {
-  background-color: #3b5998;
-}
-
+/* Terms & Conditions */
 .lovebell-terms {
   color: #999;
   text-align: center;
@@ -323,5 +353,63 @@ body {
 .lovebell-terms a {
   color: #ff4d95;
   text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.lovebell-terms a:hover {
+  color: #ed94b8;
+  text-decoration: underline;
+}
+
+/* CSS Animations */
+@keyframes fadeInBackground {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fadeInText {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 </style>

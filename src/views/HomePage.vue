@@ -23,6 +23,7 @@
             class="match-item"
             v-for="match in matches"
             :key="match.targetUserId"
+            @click="navigateToChat(match)"
           >
             <img
               :src="getAuthorizedImageUrl(match.targetUserAvatar)"
@@ -34,6 +35,10 @@
             </div>
           </div>
         </div>
+        <br/> <br/> <br/> <br/> 
+        <button class="outer-border" @click="navigateToLikeByPage">
+          <div class="animated-text">Who's Like?</div>
+        </button>
       </aside>
 
       <!-- Main content area: Profile card -->
@@ -54,16 +59,29 @@
               'show-dislike': showDislike,
             }"
           >
-            <img
-              v-if="currentProfile.avatar || currentProfile.imageUrl"
-              :src="
-                getAuthorizedImageUrl(
-                  currentProfile.avatar || currentProfile.imageUrl
-                )
-              "
-              alt="Profile Image"
-              class="profile-image-card"
-            />
+            <!-- Nút "Back" để di chuyển về ảnh trước đó -->
+            <button
+              v-if="currentProfile.photos.length > 1"
+              @click="prevPhoto"
+              class="back-photo-button"
+            >
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <!-- Hiển thị tất cả ảnh trong danh sách -->
+            <!-- Hiển thị một ảnh dựa vào currentPhotoIndex -->
+      <img
+        :src="getAuthorizedImageUrl(currentProfile.photos[currentPhotoIndex])"
+        alt="Profile Image"
+        class="profile-image-card"
+      />
+            <!-- Nút "Next" để di chuyển đến ảnh tiếp theo -->
+            <button
+              v-if="currentProfile.photos.length > 1"
+              @click="nextPhoto"
+              class="next-photo-button"
+            >
+              <i class="fas fa-chevron-right"></i>
+            </button>
             <div class="like-dislike-text" v-if="showLike">LIKE</div>
             <div class="like-dislike-text" v-if="showDislike">DISLIKE</div>
             <div class="profile-info">
@@ -157,12 +175,12 @@ export default {
       showLike: false, // Thêm biến để hiển thị "like"
       currentProfile: {}, // Khởi tạo đối tượng rỗng thay vì null
       profileIndex: 0, // Chỉ số của hồ sơ hiện tại trong danh sách
-
       likedProfiles: [], // Danh sách các hồ sơ đã thích
       dislikedProfiles: [], // Danh sách các hồ sơ đã không thích
       matches: [], // Dữ liệu các hồ sơ
       profileImageUrl: null, // Thêm biến này để lưu URL của ảnh profile
       showInfo: false, // Biến để kiểm soát hiển thị modal
+      currentPhotoIndex: 0, 
     };
   },
   components: {
@@ -176,7 +194,6 @@ export default {
         this.matches = matchData;
       } catch (error) {
         console.error("Error loading matches:", error.message);
-        // alert("Unable to load matches. Please try again later.");
       }
     },
 
@@ -224,6 +241,33 @@ export default {
           this.currentProfileVisible = true;
         }
       }, 500);
+    },
+    navigateToChat(match) {
+      // Lưu userId của người match vào localStorage
+      localStorage.setItem("selectedUserId", match.targetUserId);
+
+      // Điều hướng đến trang /chattingPage
+      this.$router.push({
+        path: "/chattingPage",
+        query: { id: match.targetUserId },
+      });
+    },
+    
+    nextPhoto() {
+      // Kiểm tra nếu có nhiều ảnh, chuyển sang ảnh tiếp theo
+      if (this.currentProfile.photos && this.currentProfile.photos.length > 1) {
+        this.currentPhotoIndex =
+          (this.currentPhotoIndex + 1) % this.currentProfile.photos.length;
+      }
+    },
+
+    prevPhoto() {
+      // Kiểm tra nếu có nhiều ảnh, quay lại ảnh trước đó
+      if (this.currentProfile.photos && this.currentProfile.photos.length > 1) {
+        this.currentPhotoIndex =
+          (this.currentPhotoIndex - 1 + this.currentProfile.photos.length) %
+          this.currentProfile.photos.length;
+      }
     },
 
     like() {
@@ -318,7 +362,10 @@ export default {
         return url;
       }
     },
-
+    navigateToLikeByPage() {
+    this.$router.push('/likedBy'); // Navigate to /likeBy route
+  },
+    
     getRandomDistance() {
       return Math.floor(Math.random() * 10) + 1;
     },
@@ -332,20 +379,49 @@ export default {
 
 <style scoped>
 /* Main Layout */
+.outer-border {
+  display: inline-block;
+  padding: 20px;
+  border: 2px solid red; 
+  border-radius: 8px; 
+  background: linear-gradient(135deg, #ff70a1, #ff4081); 
+  cursor: pointer; 
+  outline: none;
+  border: none;
+}
+
+.animated-text {
+  font-size: 48px;
+  font-weight: bold;
+  text-align: center;
+  animation: scaleText 2s infinite ease-in-out;
+}
+
+@keyframes scaleText {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+
 .main-layout {
   display: flex;
   height: calc(100vh - 56px);
 }
 
-/* Sidebar */
-.sidebarMatch {
-  width: 30%;
-  background-color: #f6f6f6;
-  border-right: 1px solid #e0e0e0;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-}
+  /* Sidebar */
+  .sidebarMatch {
+    width: 30%;
+    background-color: #f6f6f6;
+    border-right: 1px solid #e0e0e0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    animation: slideInLeft 0.6s ease-out;
+  }
 
 .sidebar-header {
   text-align: center;
@@ -354,12 +430,14 @@ export default {
   font-weight: bold;
 }
 
-/* Tạo layout dạng lưới cho các đối tượng tương hợp */
+/* Grid Layout for Matching Objects */
 .matches-grid {
+  padding-bottom: 300px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* Chia lưới thành 3 cột */
+  grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   padding-top: 20px;
+  animation: fadeIn 0.8s ease-in-out;
 }
 
 .match-item {
@@ -368,6 +446,14 @@ export default {
   align-items: center;
   text-align: center;
   cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.match-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  padding: 10px;
 }
 
 .match-image {
@@ -376,6 +462,7 @@ export default {
   border-radius: 20%;
   object-fit: cover;
   margin-bottom: 10px;
+  animation: popIn 0.5s ease-out;
 }
 
 .match-name {
@@ -401,153 +488,39 @@ export default {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   position: relative;
   transition: transform 0.5s ease, opacity 0.5s ease;
+  animation: fadeInUp 0.8s ease-in-out;
 }
 
 .profile-image-card {
   width: 450px;
   height: 500px;
   border-radius: 10px;
-  object-fit: cover; /* Đảm bảo ảnh phù hợp với container */
+  object-fit: cover;
+  animation: zoomIn 0.6s ease;
 }
+
 .profile-info {
   text-align: left;
   font-size: 18px;
 }
-.profile-info h2 {
-  margin: 10px 0;
-}
 
-.profile-info i {
-  margin-right: 5px; /* Thêm khoảng cách giữa biểu tượng và đoạn văn */
-  color: black; /* Đặt màu trắng cho biểu tượng */
-}
-
-.action-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 20px;
-  width: 100%;
-}
-
-.button {
-  position: relative;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  cursor: pointer;
-  transition: transform 0.2s ease-in-out;
-}
-
-.button::before {
-  content: "";
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  width: 66px;
-  height: 66px;
-  border-radius: 50%;
-  background: linear-gradient(45deg, red, orange);
-  z-index: -1;
-}
-
-.super-like-button::before {
-  background: linear-gradient(45deg, blue, cyan);
-}
-
-.like-button::before {
-  background: linear-gradient(45deg, green, lime);
-}
-
-.button:hover {
-  transform: scale(1.1);
-}
-
-.button:active {
-  transform: scale(0.95);
-}
-
-.button i {
-  font-size: 1.5rem;
-}
-
-/* Nút Dislike (Màu đỏ) */
-.dislike-button i {
-  color: #ff5a5f;
-}
-
-/* Nút Super Like (Màu xanh dương) */
-.super-like-button i {
-  color: #3498db;
-}
-
-/* Nút Like (Màu xanh lá cây) */
-.like-button i {
-  color: #2ecc71;
-}
-
-.button:hover i {
-  color: white;
-}
-
-/* Swipe effect classes */
-.swipe-left {
-  transform: translateX(-400px);
-  opacity: 0;
-}
-
-.swipe-right {
-  transform: translateX(400px);
-  opacity: 0;
-}
-
-/* Transition Effect */
-.swipe-enter-active,
-.swipe-leave-active {
-  transition: opacity 0.5s ease, transform 0.5s ease;
-}
-
-/* Đặt vị trí của "LIKE" và "DISLIKE" lên góc trên của ảnh */
-.like-dislike-text {
-  position: absolute;
-  top: 20px; /* Đặt chữ ở góc trên */
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: white;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
-  opacity: 0;
-  transition: opacity 0.2s ease-in-out;
-}
-
-/* Hiển thị "like" ở góc trên bên trái */
-.show-like .like-dislike-text {
-  right: 20px; /* Vị trí góc phải */
-
-  opacity: 1;
-  color: #2ecc71; /* Màu xanh lá cây cho "like" */
-}
-
-/* Hiển thị "dislike" ở góc trên bên phải */
-.show-dislike .like-dislike-text {
-  left: 20px; /* Vị trí góc trái */
-
-  opacity: 1;
-  color: #ff5a5f; /* Màu đỏ cho "dislike" */
-}
 .profile-header-name {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: space-between; /* Align elements to ends */
+  margin-bottom: 10px;
 }
 
-.profile-name {
+.profile-header-name h2 {
   margin: 0;
-  flex: 1;
+  flex: 1; /* Allow h2 to take available space */
+  text-align: left;
 }
+
+.profile-kilometer {
+  margin-left: 15px; /* Add space between name and button */
+}
+
 .info-button {
   background: none;
   border: none;
@@ -565,6 +538,101 @@ export default {
   transform: scale(0.95);
 }
 
+  .back-photo-button,
+.next-photo-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  font-size: 30px;
+  color: #ff6699;
+  cursor: pointer;
+  margin-top: 20px;
+  animation: none; /* Vô hiệu hóa mọi animation */
+}
+
+  .back-photo-button {
+    left: 5px;
+    top: 270px;
+  }
+
+  .next-photo-button {
+    right: 5px;
+    top: 270px;
+  }
+
+  .profile-image-card {
+    width: 400px;
+    height: 500px;
+    border-radius: 10px;
+    object-fit: cover;
+    margin-bottom: 15px;
+  }
+
+  /* Action Buttons */
+  .action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+    width: 100%;
+  }
+
+.button {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease;
+  border: none;
+}
+
+.dislike-button {
+  background-color: #ff5a5f; /* Red color */
+}
+
+.super-like-button {
+  background-color: #3498db; /* Blue color */
+}
+
+.like-button {
+  background-color: #2ecc71; /* Green color */
+}
+
+.button:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.button:active {
+  transform: scale(0.95);
+}
+
+.button i {
+  font-size: 1.5rem;
+  color: white; /* Set icon color to white */
+}
+
+/* Swipe effect classes */
+.swipe-left {
+  transform: translateX(-400px);
+  opacity: 0;
+  animation: swipeLeftAnimation 0.5s ease forwards;
+}
+
+.swipe-right {
+  transform: translateX(400px);
+  opacity: 0;
+  animation: swipeRightAnimation 0.5s ease forwards;
+}
+
 /* Modal Overlay */
 .modal-overlay {
   position: fixed;
@@ -577,6 +645,7 @@ export default {
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  animation: fadeIn 0.5s ease;
 }
 
 /* Modal Content */
@@ -588,6 +657,7 @@ export default {
   position: relative;
   max-width: 700px;
   width: 100%;
+  animation: slideInUp 0.5s ease-out;
 }
 
 /* Close Button */
@@ -599,105 +669,111 @@ export default {
   border: none;
   cursor: pointer;
   font-size: 1.5rem;
+  transition: transform 0.2s;
 }
 
 .close-button:hover {
-  transform: scale(1.1);
+  transform: scale(1.2) rotate(90deg);
 }
 
-.close-button:active {
-  transform: scale(0.95);
+/* CSS Keyframes Animations */
+@keyframes swipeLeftAnimation {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-400px);
+  }
 }
 
-/* Image Wrapper */
-.images-wrapper {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
+@keyframes swipeRightAnimation {
+  0% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(400px);
+  }
 }
 
-.image-item {
-  flex: 1;
-  text-align: center;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
-.profile-image-modal {
-  width: 100%;
-  height: auto;
-  border-radius: 10px;
-  object-fit: cover;
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.image-label {
-  margin-top: 5px;
-  font-size: 14px;
-  color: #555;
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
-/* Action Buttons in Modal */
-.action-buttons-modal {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 20px;
+@keyframes slideInUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-.button {
-  position: relative;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: white;
-  border: 1px solid #ddd; /* Thêm viền cho nút */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  cursor: pointer;
-  transition: transform 0.2s ease-in-out;
+@keyframes zoomIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
-.button::before {
-  content: "";
-  position: absolute;
-  top: -3px;
-  left: -3px;
-  width: 66px;
-  height: 66px;
-  border-radius: 50%;
-  background: linear-gradient(45deg, red, orange);
-  z-index: -1;
+@keyframes bounceIn {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
-.super-like-button::before {
-  background: linear-gradient(45deg, blue, cyan);
-}
-
-.like-button::before {
-  background: linear-gradient(45deg, green, lime);
-}
-
-.button:hover {
-  transform: scale(1.1);
-}
-
-.button:active {
-  transform: scale(0.95);
-}
-
-.button i {
-  font-size: 1.5rem;
-}
-
-.dislike-button i {
-  color: #ff5a5f;
-}
-
-.super-like-button i {
-  color: #3498db;
-}
-
-.like-button i {
-  color: #2ecc71;
+@keyframes popIn {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 </style>

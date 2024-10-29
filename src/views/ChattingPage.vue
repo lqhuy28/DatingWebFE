@@ -289,27 +289,35 @@ export default {
 </script>
 
 <style scoped>
+/* General Layout for Chat App */
 .custom-chat-app {
   display: flex;
   height: 100vh;
-  font-family: Arial, sans-serif;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f5f7fa; /* Light background */
 }
 
+/* Sidebar Chat Styling */
 .custom-sidebar-chat {
-  width: 450px !important; /* Thêm !important để đảm bảo quy tắc được áp dụng */
+  width: 400px;
   background-color: #fafafa;
   border-right: 1px solid #e6e6e6;
   overflow-y: auto;
+  padding: 10px;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  transition: all 0.3s ease;
 }
 
 .custom-profile {
-  padding: 5px;
+  padding: 15px;
   margin-left: 20px;
-  margin-top: 40px;
   text-align: left;
-  font-size: 20px;
+  font-size: 30px;
   font-weight: bold;
   border-bottom: 1px solid #e6e6e6;
+  color: #ff6699;
+  border-radius: 10px;
+  animation: slideIn 0.5s ease-in-out;
 }
 
 .custom-contact-list {
@@ -324,11 +332,14 @@ export default {
   padding: 15px;
   border-bottom: 1px solid #e6e6e6;
   cursor: pointer;
-  font-size: 19px;
+  font-size: 16px;
+  transition: background 0.3s ease, transform 0.3s ease;
 }
 
 .custom-contact-item:hover {
-  background-color: #f1f1f1;
+  background-color: #e3f2fd;
+  transform: translateX(5px); /* Slight movement on hover */
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .custom-contact-avatar {
@@ -336,8 +347,14 @@ export default {
   height: 50px;
   border-radius: 50%;
   margin-right: 10px;
+  transition: transform 0.3s ease;
 }
 
+.custom-contact-avatar:hover {
+  transform: scale(1.1); /* Enlarge on hover */
+}
+
+/* Contact Info */
 .custom-contact-info {
   display: flex;
   flex-direction: column;
@@ -346,6 +363,7 @@ export default {
 .custom-contact-name {
   font-weight: bold;
   margin-left: 10px;
+  color: #333;
 }
 
 .custom-contact-message {
@@ -353,19 +371,28 @@ export default {
   color: #888;
 }
 
+/* Chat Window Styling */
 .custom-chat-window {
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-bottom: 30px;
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 50px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.8s ease;
 }
 
 .custom-chat-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px;
+  padding: 10px;
+  background: #0073e6;
+  color: white;
   border-bottom: 1px solid #e6e6e6;
+  animation: slideDown 0.5s ease;
 }
 
 .custom-chat-avatar {
@@ -375,20 +402,7 @@ export default {
   margin-right: 15px;
 }
 
-.custom-chat-header h3{
-  font-weight: bold;
-  font-size: 18px;
-  text-align: left;
-  align-items: center;
-}
-.custom-chat-window {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background-color: #fff;
-}
-
+/* Chat Content */
 .custom-chat-content {
   flex: 1;
   display: flex;
@@ -396,11 +410,11 @@ export default {
   justify-content: flex-end;
   padding: 20px;
   overflow-y: auto;
-  max-height: 80vh;
+  max-height: 70vh;
 }
 
 .custom-chat-content::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 .custom-chat-content::-webkit-scrollbar-thumb {
@@ -412,12 +426,14 @@ export default {
   background-color: #f1f1f1;
 }
 
+/* Message Bubbles */
 .custom-message {
   display: flex;
   align-items: center;
   margin-bottom: 10px;
   max-width: 70%;
   word-wrap: break-word;
+  transition: transform 0.2s ease;
 }
 
 .custom-other-message {
@@ -429,15 +445,16 @@ export default {
   align-self: flex-end;
   background-color: #3897f0;
   color: white;
-  border-radius: 15px;
+  border-radius: 15px 15px 15px 15px;
   max-width: fit-content;
+  animation: popIn 0.4s ease;
 }
 
 .custom-message p {
   margin: 0;
-  padding: 15px;
+  padding: 10px;
   background-color: #f1f1f1;
-  border-radius: 15px;
+  border-radius: 15px 15px 15px 0;
   display: inline-block;
   width: auto;
 }
@@ -454,20 +471,27 @@ export default {
   background-color: #f1f1f1;
 }
 
+/* Input Area */
 .custom-chat-input {
   display: flex;
-  padding: 15px;
+  padding: 10px;
   border-top: 1px solid #e6e6e6;
-  margin-bottom: 30px;
+  background: #fafafa;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .custom-chat-input input {
   flex: 1;
   padding: 15px;
   border: 1px solid #e6e6e6;
-  border-radius: 10px;
+  border-radius: 20px;
   margin-right: 10px;
   font-size: 16px;
+  transition: border 0.3s ease;
+}
+
+.custom-chat-input input:focus {
+  border-color: #3897f0;
 }
 
 .custom-chat-input button {
@@ -475,17 +499,20 @@ export default {
   color: #fff;
   border: none;
   padding: 10px 20px;
-  border-radius: 10px;
+  border-radius: 20px;
   cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .custom-chat-input button:hover {
   background-color: #0073e6;
+  transform: translateY(-2px); /* Lift button on hover */
 }
 
+/* Chat Control Buttons */
 .custom-chat-controls {
   display: flex;
-  gap: 0px;
+  gap: 5px;
 }
 
 .custom-chat-control-button {
@@ -493,15 +520,39 @@ export default {
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: #000;
+  color: white;
+  transition: color 0.3s ease, transform 0.2s ease;
 }
 
 .custom-chat-control-button:hover {
-  color: #0073e6;
+  color: #e0e0e0;
+  transform: scale(1.1); /* Slightly enlarge on hover */
 }
 
 .material-icons {
   font-size: 24px;
 }
+
+/* Keyframe Animations */
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes slideDown {
+  0% { opacity: 0; transform: translateY(-20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  0% { opacity: 0; transform: translateX(-50px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
 </style>
 

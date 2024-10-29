@@ -53,6 +53,7 @@
 
 <script>
 import { changePassword } from '@/services/change-password-service';
+import { ElNotification } from "element-plus"; // Thêm import ElNotification
 
 export default {
   data() {
@@ -69,6 +70,11 @@ export default {
       // Check if the new password and confirm password match
       if (this.newPassword !== this.confirmPassword) {
         this.passwordMismatch = true;
+        ElNotification({
+          title: "Error",
+          message: "New password and confirmation do not match.",
+          type: "error",
+        });
         return;
       }
 
@@ -77,21 +83,33 @@ export default {
       console.log(localStorage.getItem('email'));
 
       if (!email) {
-        alert('Email is missing. Please log in again.');
+        ElNotification({
+          title: "Error",
+          message: "Email is missing. Please log in again.",
+          type: "error",
+        });
         return;
       }
 
       try {
         const response = await changePassword(email, this.oldPassword, this.newPassword);
-        alert(response.message); // Show message from the server
-        console.log(email, this.oldPassword, this.newPassword);
+        
+        ElNotification({
+          title: response.status === 200 ? "Success" : "Error",
+          message: response.message,
+          type: response.status === 200 ? "success" : "error",
+        });
 
         // Redirect to home page after successful password change
         if (response.status === 200) {
           this.$router.push('/');
         }
       } catch (error) {
-        alert(error.message);
+        ElNotification({
+          title: "Error",
+          message: error.message,
+          type: "error",
+        });
       }
     }
   },
@@ -108,6 +126,7 @@ body {
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
+  animation: fadeInBackground 2s ease-in-out;
 }
 
 .change-password-page-container {
@@ -117,6 +136,7 @@ body {
   align-items: center;
   gap: 20px;
   background-color: #ff85a1;
+  animation: slideInUp 1.5s ease-in-out;
 }
 
 .change-password-logo-container {
@@ -127,6 +147,7 @@ body {
   border-radius: 10px;
   padding: 20px;
   margin-right: 20px;
+  animation: bounce 2s infinite;
 }
 
 .change-password-white-container {
@@ -135,12 +156,14 @@ body {
   border-radius: 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   padding: 50px;
+  animation: slideInUp 1.2s ease-in-out;
 }
 
 .change-password-logo img {
   width: 300px;
   height: auto;
   margin-bottom: 40px;
+  animation: zoomIn 1.5s ease;
 }
 
 h1 {
@@ -148,6 +171,7 @@ h1 {
   font-size: 36px;
   margin: 10px 0;
   text-align: center;
+  animation: fadeInText 1.5s ease;
 }
 
 .change-password-form-container {
@@ -156,12 +180,14 @@ h1 {
   padding: 20px;
   background-color: #fff;
   border-radius: 10px;
+  animation: fadeInText 2s ease-in-out;
 }
 
 h2 {
   color: #ff4d95;
   font-size: 30px;
   text-align: center;
+  animation: slideInFromLeft 1.5s ease;
 }
 
 p {
@@ -177,12 +203,20 @@ p {
   border-radius: 5px;
   border: 1px solid #ddd;
   font-size: 16px;
+  animation: fadeInText 1.2s ease-in-out;
+}
+
+.change-password-input:focus {
+  box-shadow: 0 0 8px rgba(255, 77, 149, 0.5);
+  border: 1px solid #ff4d95;
+  animation: pulse 0.5s infinite;
 }
 
 .change-password-error {
   color: red;
   text-align: center;
   margin-bottom: 20px;
+  animation: shake 0.8s ease;
 }
 
 .change-password-button {
@@ -195,9 +229,109 @@ p {
   border-radius: 5px;
   font-size: 16px;
   cursor: pointer;
+  animation: bounceIn 1s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .change-password-button:hover {
   background-color: #ed94b8;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(255, 77, 149, 0.3);
 }
+
+/* CSS Animations */
+@keyframes fadeInBackground {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes fadeInText {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25%, 75% {
+    transform: translateX(-10px);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+}
+
+@keyframes bounceIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    transform: translateX(-200px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 </style>

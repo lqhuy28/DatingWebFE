@@ -48,13 +48,21 @@
 
     <!-- Modal hiển thị trang chỉnh sửa -->
     <div v-if="showEditProfile" class="modal-overlay">
-      <div class="modal-content">
-        <!-- Nút X để đóng modal -->
-        <button class="close-button" @click="showEditProfile = false">X</button>
+  <div class="modal-content">
+    <div class="modal-header">
+  <div class="modal-title">
+    <h2 class="modal-h2">Chỉnh sửa trang cá nhân</h2>
+  </div>
+  <div class="modal-close">
+    <button class="close-button" @click="showEditProfile = false">X</button>
+  </div>
+</div>
 
-        <ChangeProfilePage @close="showEditProfile = false" />
-      </div>
+    <div class="modal-body">
+      <ChangeProfilePage @close="showEditProfile = false" />
     </div>
+  </div>
+</div>
 
     <!-- Modal hiển thị ảnh lớn -->
     <div v-if="showPhotoModal" class="modal-overlay">
@@ -96,14 +104,13 @@ export default {
       const profileResponse = await getMyProfile();
       const profile = profileResponse.data; // Lấy data từ response
 
-      // Gán dữ liệu từ API vào profileData
       this.profileData.avatar = profile.avatar || "Unnamed User";
       this.profileData.name = profile.name || "Unnamed User";
       this.profileData.age = profile.age || "Unknown";
       this.profileData.gender = profile.gender || "Unknown";
       this.profileData.bio = profile.bio || "No bio available";
       this.profileData.photos = profile.photos || [];
-      
+      // EventBus.on('profile-updated', this.updateProfileData);
     } catch (error) {
       console.error("Error loading profile data:", error);
     }
@@ -121,6 +128,7 @@ export default {
 .sidebarr {
   flex-direction: column;
   height: 100vh;
+  overflow-y: hidden;
 }
 
 .edit-profile {
@@ -149,8 +157,8 @@ export default {
 
 .content {
   flex: 5;
-  padding-left: 50px;
-  padding-top: 50px;
+  padding-left: 100px;
+  padding-top: 10px;
 }
 
 /* Profile Header */
@@ -177,7 +185,7 @@ export default {
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* Chia ảnh thành 3 cột */
   gap: 16px; /* Tăng khoảng cách giữa các ảnh */
-  max-height: 650px; /* Giới hạn chiều cao */
+  max-height: 700px; /* Giới hạn chiều cao */
   overflow-y: auto; /* Thêm thanh cuộn dọc khi vượt quá chiều cao */
   padding: 0 70px; /* Căn giữa lưới ảnh */
 }
@@ -208,6 +216,7 @@ export default {
 }
 
 /* Style cho modal */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -223,35 +232,74 @@ export default {
 
 .modal-content {
   background-color: white;
-  padding: 20px;
   border-radius: 12px;
   max-width: 600px;
   width: 100%;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
   position: relative;
+  max-height: 90vh; /* Set a maximum height for the modal */
+  overflow: hidden; /* Hide any overflow outside the modal */
 }
 
-.modal-content {
-  max-height: 90vh; /* Giới hạn chiều cao modal */
-  overflow-y: auto; /* Thêm thanh cuộn dọc nếu nội dung vượt quá chiều cao */
+/* Style for the modal body */
+.modal-body {
+  overflow-y: auto; /* Enable vertical scrolling */
+  padding: 20px;
+  max-height: calc(90vh - 60px); /* Adjust height relative to modal's max height and header */
+  flex: 1;
 }
 
-/* Style cho nút X (close) */
+.modal-header {
+  display: flex;
+  justify-content: space-between; /* Đặt khoảng cách giữa hai phần tử */
+  align-items: center; /* Căn giữa theo chiều dọc */
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  background-color: white;
+  z-index: 1;
+}
+
+/* Container cho tiêu đề */
+.modal-title {
+  flex: 1; /* Chiếm toàn bộ chiều rộng có thể để căn giữa */
+  display: flex;
+  justify-content: center; /* Căn giữa tiêu đề theo chiều ngang */
+}
+
+/* Style cho tiêu đề */
+.modal-h2 {
+  font-size: 24px;
+  margin: 0;
+}
+
+/* Container cho nút close */
+.modal-close {
+  display: flex;
+  align-items: center; /* Căn giữa nút theo chiều dọc */
+}
+
+/* Style cho nút Close */
 .close-button {
-  position: absolute;
-  top: 10px;
-  right: 15px;
   background-color: transparent;
   border: none;
   font-size: 20px;
   font-weight: bold;
   cursor: pointer;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%; /* Làm cho nút hình tròn */
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
+
 
 .close-button:hover {
   color: red;
 }
-
 /* Ảnh lớn trong modal */
 .large-photo {
   max-width: 100%;

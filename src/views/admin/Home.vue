@@ -42,6 +42,17 @@
           <p>{{ matchCount }} matches</p>
         </div>
       </el-card>
+
+      <el-card class="stat-card" shadow="hover" @click="navigateTo('/admin/payments')">
+        <el-icon class="stat-icon" color="#FF00FF">
+          <TrendCharts />
+        </el-icon>
+        <div class="stat-content">
+          <h3>Payments</h3>
+          <p>{{ paymentCount }} payments</p>
+          <p>Total: {{ paymentTotal }} VNĐ</p>
+        </div>
+      </el-card>
     </div>
 
     <!-- Combined Chart Section -->
@@ -51,12 +62,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { User, CoffeeCup, ChatLineRound, Money } from '@element-plus/icons-vue';
+import { User, CoffeeCup, ChatLineRound, Money, TrendCharts } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
 import { getAllCafes } from '@/services/admin/admin-cafe-service';
 import { getAllContactForms } from '@/services/admin/admin-contact-service';
 import { getAllUsers } from '@/services/admin/admin-user-service';
 import { getAllMatches } from '@/services/admin/admin-match-service';
+import { getAllPayments } from '@/services/admin/admin-payment-service';
 import * as echarts from 'echarts'; // Import ECharts
 
 // State variables
@@ -64,6 +76,8 @@ const userCount = ref(0);
 const cafeCount = ref(0);
 const contactCount = ref(0);
 const matchCount = ref(0);
+const paymentCount = ref(0);
+const paymentTotal = ref(0);
 
 const router = useRouter();
 
@@ -78,6 +92,9 @@ const fetchStats = async () => {
     cafeCount.value = cafes.length;
     const matches = await getAllMatches();
     matchCount.value = matches.length;
+    const payments = await getAllPayments();
+    paymentCount.value = payments.length;
+    paymentTotal.value = payments.reduce((acc, payment) => acc + payment.amount, 0);
     renderChart();
   } catch (error) {
     console.error('Error fetching statistics:', error.message);
@@ -94,7 +111,7 @@ const renderChart = () => {
   const chartDom = document.getElementById('statistics-chart');
   const myChart = echarts.init(chartDom);
 
-  const colors = ['#f56c6c', '#67c23a', '#e6a23c', '#409eff'];
+  const colors = ['#f56c6c', '#67c23a', '#e6a23c', '#409eff', "#FF00FF"];
 
   const option = {
     title: {
@@ -103,7 +120,7 @@ const renderChart = () => {
     tooltip: {},
     xAxis: {
       type: 'category',
-      data: ['Users', 'Cafes', 'Contacts', 'Matches']
+      data: ['Users', 'Cafes', 'Contacts', 'Matches', 'Payments']
     },
     yAxis: {
       type: 'value'
@@ -112,7 +129,7 @@ const renderChart = () => {
       {
         name: 'Count',
         type: 'bar',
-        data: [userCount.value, cafeCount.value, contactCount.value, matchCount.value],
+        data: [userCount.value, cafeCount.value, contactCount.value, matchCount.value, paymentCount.value],
         itemStyle: {
           color: (params) => {
             return colors[params.dataIndex];

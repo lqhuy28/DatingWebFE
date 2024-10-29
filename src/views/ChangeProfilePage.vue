@@ -1,7 +1,5 @@
 <template>
   <div class="edit-profile-page">
-    <h2>Chỉnh sửa trang cá nhân</h2>
-
     <form @submit.prevent="saveProfile">
       <!-- Name -->
       <div class="form-group">
@@ -62,6 +60,7 @@
           placeholder="Nhập số điện thoại của bạn"
           pattern="[0-9]*"
           maxlength="15"
+          @input="profileData.phone = profileData.phone.replace(/\D/g, '')"
           required
         />
       </div>
@@ -88,7 +87,15 @@
                 accept="image/*"
               />
             </div>
-            <button type="button" @click="removePhoto(index)">Xóa</button>
+            <!-- Replace the delete button with a trash icon -->
+            <button
+              type="button"
+              class="delete-photo-button"
+              @click="removePhoto(index)"
+            >
+              <i class="fas fa-trash"></i>
+              <!-- Trash bin icon -->
+            </button>
           </div>
         </div>
         <button type="button" @click="addPhoto">Thêm ảnh</button>
@@ -106,21 +113,21 @@
 </template>
 
 <script>
-import { getMyProfile, updateProfile } from "@/services/viewProfile-service.js"; // Import service
+import { getMyProfile, updateProfile } from "@/services/viewProfile-service.js";
 
 export default {
   data() {
     return {
       profileData: {
-        name: "", 
-        phone: "", 
-        age: "", 
-        gender: "", 
+        name: "",
+        phone: "",
+        age: "",
+        gender: "",
         bio: "",
-        photos: [], // Sửa từ 'files' thành 'photos'
+        photos: [],
       },
-      bioMaxLength: 150, // Độ dài tối đa cho tiểu sử
-      profileError: "", // Lưu trữ lỗi
+      bioMaxLength: 150,
+      profileError: "",
     };
   },
   computed: {
@@ -131,7 +138,7 @@ export default {
   async mounted() {
     try {
       const profileResponse = await getMyProfile();
-      const profile = profileResponse.data; 
+      const profile = profileResponse.data;
 
       this.profileData = {
         name: profile.name || "",
@@ -139,12 +146,12 @@ export default {
         age: profile.age || "",
         gender: profile.gender || "",
         bio: profile.bio || "",
-        photos: profile.photos.map((photo) => ({
-          url: photo.url,
-          file: null, 
-        })) || [],
+        photos:
+          profile.photos.map((photo) => ({
+            url: photo.url,
+            file: null,
+          })) || [],
       };
-      
     } catch (error) {
       console.error("Error loading profile data:", error);
       this.profileError = "Không thể tải thông tin hồ sơ.";
@@ -172,47 +179,48 @@ export default {
     },
 
     async saveProfile() {
-  try {
-    const formData = new FormData();
-    
-    // Chuyển đổi các thông tin profile thành đối tượng
-    const updateProfileRequest = {
-      name: this.profileData.name,
-      phone: this.profileData.phone,
-      age: this.profileData.age,
-      bio: this.profileData.bio,
-      gender: this.profileData.gender,
-    };
-    
-    formData.append("updateProfileRequest", JSON.stringify(updateProfileRequest));
+      try {
+        const formData = new FormData();
+        const updateProfileRequest = {
+          name: this.profileData.name,
+          phone: this.profileData.phone,
+          age: this.profileData.age,
+          bio: this.profileData.bio,
+          gender: this.profileData.gender,
+        };
 
-    // Gắn các file ảnh chỉ khi có
-    const filesToUpload = this.profileData.photos.map(photo => photo.file).filter(file => file);
-    if (filesToUpload.length > 0) {
-      filesToUpload.forEach(file => {
-        formData.append("files", file);
-      });
-    }
+        formData.append(
+          "updateProfileRequest",
+          JSON.stringify(updateProfileRequest)
+        );
+        const filesToUpload = this.profileData.photos
+          .map((photo) => photo.file)
+          .filter((file) => file);
+        if (filesToUpload.length > 0) {
+          filesToUpload.forEach((file) => {
+            formData.append("files", file);
+          });
+        }
 
-    // Gọi API cập nhật profile
-    const response = await updateProfile(
-      this.profileData.name,
-      this.profileData.phone,
-      this.profileData.age,
-      this.profileData.bio,
-      this.profileData.gender,
-      filesToUpload // Truyền mảng các tệp ảnh
-    );
+        const response = await updateProfile(
+          this.profileData.name,
+          this.profileData.phone,
+          this.profileData.age,
+          this.profileData.bio,
+          this.profileData.gender,
+          filesToUpload
+        );
 
-    if (response.status === 200) {
-      alert("Cập nhật thành công!");
-      this.$router.push("/profile"); // Điều hướng về trang cá nhân
-    }
-  } catch (error) {
-    console.error("Error saving profile:", error);
-    this.profileError = "Đã xảy ra lỗi khi cập nhật thông tin.";
-  }
-},
+        if (response.status === 200) {
+          this.$emit("close");
+          this.$router.push("/profile");
+          window.location.reload();
+        }
+      } catch (error) {
+        console.error("Error saving profile:", error);
+        this.profileError = "Đã xảy ra lỗi khi cập nhật thông tin.";
+      }
+    },
   },
 };
 </script>
@@ -226,6 +234,13 @@ export default {
   background-color: #f9f9f9;
   border-radius: 12px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+button[type="button"] {
+  margin-top: 10px;
+  padding: 10px;
+  cursor: pointer;
+  display: block;
 }
 
 h2 {
@@ -266,13 +281,21 @@ h2 {
   margin-bottom: 10px;
 }
 
-.photo-input button {
-  background-color: #ff4b4b;
-  color: white;
+.delete-photo-button {
+  background-color: transparent;
   border: none;
-  border-radius: 8px;
-  padding: 5px 10px;
   cursor: pointer;
+  color: #ff4b4b;
+  font-size: 18px;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.delete-photo-button:hover {
+  color: #cc0000;
 }
 
 .photo-preview {

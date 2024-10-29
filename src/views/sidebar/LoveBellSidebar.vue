@@ -2,9 +2,11 @@
   <div class="lovebell-sidebar">
     <ul class="menu">
       <li class="menu-item-title">
-        <span>LOVE-BELL</span>
+        <router-link to="/homePage">
+          <span>LOVE-BELL</span>
+        </router-link>
       </li>
-      
+
       <!-- Link to Home -->
       <li class="menu-item">
         <router-link to="/homePage" class="menu-link">
@@ -61,7 +63,7 @@
         </router-link>
       </li>
 
-      <!-- Link to Safety -->
+      <!-- Link to Location -->
       <li class="menu-item">
         <router-link to="/getLocation" class="menu-link">
           <i class="material-icons">location_on</i>
@@ -69,22 +71,39 @@
         </router-link>
       </li>
 
+      <!-- Link to Package -->
+      <li class="menu-item">
+        <router-link to="/packagePremiumPage" class="menu-link">
+          <i class="material-icons">inventory_2</i>
+          <span>Package</span>
+        </router-link>
+      </li>
+
       <!-- Profile Link -->
       <li class="menu-item profile">
         <router-link to="/profile" class="menu-link">
-          <img :src="require('@/assets/logo.png')" alt="Profile Image" class="profile-img"/>
+          <img
+            :src="require('@/assets/logo.png')"
+            alt="Profile Image"
+            class="profile-img"
+          />
           <span>My Profile</span>
         </router-link>
       </li>
 
       <!-- Link to More Options (Dropdown) -->
       <li class="menu-item see-more" @click="toggleMoreOptions">
-        <i class="material-icons">menu</i>
+        <i class="material-icons rotate" :class="{ active: showMoreOptions }"
+          >menu</i
+        >
         <span>Xem thêm</span>
       </li>
 
       <!-- More Options Dropdown -->
-      <ul v-if="showMoreOptions" class="dropdown dropdown-reverse">
+      <ul
+        v-if="showMoreOptions"
+        class="dropdown dropdown-reverse animate-fade-in"
+      >
         <li class="dropdown-item">
           <router-link to="/settings" class="menu-link">
             <i class="material-icons">settings</i>
@@ -110,50 +129,64 @@
           </router-link>
         </li>
         <li class="dropdown-item" @click="handleLogout">
-            <i class="material-icons" >logout</i>
-            <span>Đăng xuất</span>
+          <i class="material-icons">logout</i>
+          <span>Đăng xuất</span>
         </li>
       </ul>
     </ul>
   </div>
 </template>
+
 <script>
-import { logoutUser } from '@/services/logout-service'; // Import dịch vụ logout
+import { logoutUser } from "@/services/logout-service"; // Import dịch vụ logout
+import { ElNotification } from "element-plus"; // Import ElNotification
 
 export default {
-  name: 'LoveBellSidebar',
+  name: "LoveBellSidebar",
   data() {
     return {
-      showMoreOptions: false // Trạng thái ẩn/hiện của danh sách "Xem thêm"
+      showMoreOptions: false, // Trạng thái ẩn/hiện của danh sách "Xem thêm"
     };
   },
   methods: {
     toggleMoreOptions() {
-      this.showMoreOptions = !this.showMoreOptions; // Thay đổi trạng thái khi nhấp vào
+      this.showMoreOptions = !this.showMoreOptions;
     },
     async handleLogout() {
       try {
-        const token = localStorage.getItem('userToken'); // Lấy token từ localStorage
+        const token = localStorage.getItem("userToken"); // Lấy token từ localStorage
         if (!token) {
-          alert('No token found. Please log in first.');
+          ElNotification({
+            title: "Warning",
+            message: "No token found. Please log in first.",
+            type: "warning",
+          });
           return;
         }
 
         // Gọi API logout
         const response = await logoutUser(token);
-        alert(response.message);
+        ElNotification({
+          title: "Success",
+          message: response.message || "Logged out successfully.",
+          type: "success",
+        });
 
         if (response.status === 200) {
           // Xóa token và chuyển hướng về trang login
-          localStorage.removeItem('userToken');
-          localStorage.removeItem('userEmail');
-          this.$router.push('/'); // Chuyển hướng người dùng về trang login hoặc trang chủ
+          localStorage.removeItem("userToken");
+          localStorage.removeItem("userEmail");
+          this.$router.push("/"); // Chuyển hướng người dùng về trang login hoặc trang chủ
         }
       } catch (error) {
-        alert('Logout failed: ' + error.message);
+        ElNotification({
+          title: "Error",
+          message: error.message || "Logout failed. Please try again.",
+          type: "error",
+        });
       }
-    }
-  }
+    },
+  },
 };
 </script>
 <style>
@@ -166,6 +199,7 @@ export default {
   flex-direction: column;
   justify-content: space-between;
   height: calc(100vh - 56px);
+  transition: all 0.4s ease;
 }
 
 .menu {
@@ -182,9 +216,15 @@ export default {
   width: 100%;
   cursor: pointer;
   color: #000;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+.menu-item:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  transform: translateX(5px);
 }
 
-.profile, .see-more {
+.profile,
+.see-more {
   padding: 15px 20px;
   font-size: 20px;
   font-weight: bold;
@@ -212,10 +252,33 @@ export default {
 }
 
 .menu-item-title {
-  padding: 35px;
+  padding: 35px 0 35px;
   margin-left: 30px;
   font-size: 30px;
-  font-family: 'Billabong', cursive;
+  font-family: "Billabong", cursive;
+  width: 100%;
+  display: block;
+  transition: color 0.3s ease, font-weight 0.3s ease; /* Hiệu ứng chuyển đổi */
+}
+
+.menu-item-title {
+  padding: 35px 0 35px;
+  margin-left: 65px;
+  font-size: 30px;
+  font-family: "Billabong", cursive;
+  width: 100%;
+  display: block;
+  transition: color 0.3s ease, font-weight 0.3s ease;
+}
+
+.menu-item-title a {
+  color: #000;
+  text-decoration: none;
+}
+
+.menu-item-title:hover {
+  font-weight: bold;
+  animation: bounce 0.6s;
 }
 
 .profile-img {
@@ -226,11 +289,10 @@ export default {
 }
 
 @media screen and (max-height: 764px) {
-  .lovebell-sidebar{
+  .lovebell-sidebar {
     overflow-y: scroll;
   }
 }
-
 
 @media screen and (min-height: 764px) {
   .profile {
@@ -284,9 +346,53 @@ export default {
 
 .dropdown-reverse .dropdown-item {
   padding: 15px 10px;
+  transition: background-color 0.3s ease, padding-left 0.3s ease;
 }
 
 .dropdown-reverse .dropdown-item:hover {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Rotate Animation for See More Icon */
+.rotate {
+  transition: transform 0.3s;
+}
+
+.rotate.active {
+  transform: rotate(180deg);
+}
+
+@keyframes bounce {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Animation for Dropdown */
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-in-out;
+  animation-fill-mode: forwards;
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
