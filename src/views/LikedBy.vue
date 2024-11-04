@@ -1,65 +1,61 @@
 <template>
-  <div id="app">
-    <!-- Sidebar for matches -->
-    <aside class="sidebarMatch">
-      <div class="sidebar-header">
-        <h3>Những người đã thích bạn</h3>
+  <div id="likedBy-container" class="liked-app-container">
+    <!-- Sidebar showing people who liked the user -->
+    <aside class="liked-sidebarMatch">
+      <div class="liked-sidebar-header">
+        <h3>People Who Liked You</h3>
       </div>
-      <div class="matches-grid" v-if="likedMe && likedMe.length > 0">
-        <!-- Display matched profiles -->
+      <div class="liked-matches-grid" v-if="likedMe && likedMe.length > 0">
         <div
-          class="match-item"
+          class="liked-match-item"
           v-for="like in likedMe"
           :key="like.profileId"
           @click="selectUser(like)"
         >
           <img
             :src="getAuthorizedImageUrl(like.avatar)"
-            class="match-image"
-            alt="Match Avatar"
+            class="liked-match-image"
+            alt="User Avatar"
           />
-          <div class="match-info">
-            <span class="match-name">{{ like.name }}</span>
+          <div class="liked-match-info">
+            <span class="liked-match-name">{{ like.name }}</span>
           </div>
         </div>
       </div>
     </aside>
 
-    <!-- User Details Section, only visible when a user is selected -->
-    <div v-if="selectedUser" class="user-details">
-      <button class="close-button" @click="closeProfile">×</button>
-
+    <!-- Detailed view of selected user -->
+    <div v-if="selectedUser" class="liked-user-details">
+      <button class="liked-close-button" @click="closeProfile">×</button>
       <div
         v-if="selectedUser.photoUrls && selectedUser.photoUrls.length"
-        class="user-photos"
+        class="liked-user-photos"
       >
-        <div class="photo-gallery">
-          <button @click="prevPhoto" class="nav-button">❮</button>
+        <div class="liked-photo-gallery">
+          <button @click="prevPhoto" class="liked-nav-button">❮</button>
           <img
             :src="selectedUser.photoUrls[currentPhotoIndex]"
             alt="User Photo"
-            class="user-photo"
+            class="liked-user-photo"
           />
-          <button @click="nextPhoto" class="nav-button">❯</button>
+          <button @click="nextPhoto" class="liked-nav-button">❯</button>
         </div>
       </div>
-      <h2>{{ selectedUser.name }} - {{ selectedUser.age }}</h2>
-      <p>{{ selectedUser.bio || "No bio available" }}</p>
-
-      <div class="action-buttons-modal">
-        <button
-          class="button dislike-button"
-          @click="handleUnlike(selectedUser.userId)"
-        >
+      <div class="liked-info">
+        <h2>{{ selectedUser.name }} - {{ selectedUser.age }}</h2>
+        <p>{{ selectedUser.bio || "No bio available" }}</p>
+      </div>
+      <div class="liked-action-buttons-modal">
+        <button class="liked-button liked-dislike-button" @click="handleUnlike(selectedUser.userId)">
           <i class="fas fa-times"></i>
         </button>
-        <button class="button super-like-button" @click="superLike">
+        <button
+          class="liked-button liked-super-like-button"
+          @click="handleSuperLike"
+        >
           <i class="fas fa-star"></i>
         </button>
-        <button
-          class="button like-button"
-          @click="handleLike(selectedUser.userId)"
-        >
+        <button class="liked-button liked-like-button" @click="handleLike(selectedUser.userId)">
           <i class="fas fa-heart"></i>
         </button>
       </div>
@@ -69,24 +65,26 @@
 
 <script>
 import { getAllLikedMe } from "@/services/like-service";
+import { ElNotification } from "element-plus";
+import { swipeAction } from "@/services/swipe-service";
 
 export default {
-  name: "App",
+  name: "LikedBy",
   data() {
     return {
-      likedMe: [], // Stores profiles that liked the user
-      selectedUser: null, // Holds the selected user's details
-      currentPhotoIndex: 0, // Current photo index in the gallery
+      likedMe: [],
+      selectedUser: null,
+      currentPhotoIndex: 0,
     };
   },
   methods: {
-    async loadlikedMe() {
+    async loadLikedMe() {
       try {
+        // Fetch profiles that liked the current user
         const likedMeData = await getAllLikedMe();
-        console.log("Match data:", likedMeData);
         this.likedMe = likedMeData;
       } catch (error) {
-        console.error("Error loading matches:", error.message);
+        console.error("Error loading liked profiles:", error.message);
       }
     },
     getAuthorizedImageUrl(url) {
@@ -100,13 +98,16 @@ export default {
       }
     },
     selectUser(user) {
-      console.log("Selected User:", user); // Log selected user data
-      console.log("Photo URLs:", user.photoUrls);
-      this.selectedUser = user;
+      // Show details of the selected user
+      this.selectedUser = {
+        ...user,
+        photoUrls: user.photos.map((photo) => photo.url),
+      };
       this.currentPhotoIndex = 0; // Reset photo index when a new user is selected
     },
     closeProfile() {
-      this.selectedUser = null; // Clear selected user to hide details
+      // Close the detailed view of a selected user
+      this.selectedUser = null;
     },
     prevPhoto() {
       if (this.selectedUser && this.selectedUser.photoUrls.length) {
@@ -121,54 +122,88 @@ export default {
           (this.currentPhotoIndex + 1) % this.selectedUser.photoUrls.length;
       }
     },
-    handleLike(userId) {
-      console.log(`Liked user with ID: ${userId}`);
-      this.closeProfile();
+    async handleLike(userId) {
+      try {
+        const response = await swipeAction(userId, true);
+        console.log("Swipe action (like) completed:", response);
+
+        ElNotification({
+          title: "Liked",
+          message: `You have liked user ${userId}`,
+          type: "success",
+        });
+        this.closeProfile();
+      } catch (error) {
+        console.error("Error during like action:", error.message);
+        ElNotification({
+          title: "Error",
+          message: "An error occurred while liking.",
+          type: "error",
+        });
+      }
     },
-    handleUnlike(userId) {
-      console.log(`Unliked user with ID: ${userId}`);
-      this.closeProfile();
-    },
-    superLike() {
-      console.log("Super liked the user!");
+    async handleUnlike(userId) {
+      try {
+        const response = await swipeAction(userId, false);
+        console.log("Swipe action (unlike) completed:", response);
+        ElNotification({
+          title: "Unliked",
+          message: `You have unliked user ${userId}`,
+          type: "success",
+        });
+        this.closeProfile();
+      } catch (error) {
+        console.error("Error during unlike action:", error.message);
+        ElNotification({
+          title: "Error",
+          message: "An error occurred while unliking.",
+          type: "error",
+        });
+      }
     },
   },
-  async mounted() {
-    await this.loadlikedMe();
+  mounted() {
+    this.loadLikedMe(); // Load profiles when component is mounted
   },
 };
 </script>
 
 <style scoped>
+/* Container layout */
+.liked-app-container {
+  display: flex;
+  height: 100vh;
+}
+
 /* Sidebar */
-.sidebarMatch {
-  width: 30%;
+.liked-sidebarMatch {
+  width: 45%;
   background-color: #f6f6f6;
   border-right: 1px solid #e0e0e0;
   padding: 20px;
   display: flex;
   flex-direction: column;
-  animation: slideInLeft 0.6s ease-out;
+  animation: liked-slideInLeft 0.6s ease-out;
 }
 
-.sidebar-header {
+.liked-sidebar-header {
   text-align: center;
   margin: 10px;
   font-size: 24px;
   font-weight: bold;
 }
 
-/* Grid Layout for Matching Objects */
-.matches-grid {
+/* Grid Layout for Liked Profiles */
+.liked-matches-grid {
   padding-bottom: 300px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
   padding-top: 20px;
-  animation: fadeIn 0.8s ease-in-out;
+  animation: liked-fadeIn 0.8s ease-in-out;
 }
 
-.match-item {
+.liked-match-item {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -177,57 +212,60 @@ export default {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.match-item:hover {
+.liked-match-item:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   border-radius: 20px;
   padding: 10px;
 }
 
-.match-image {
+.liked-match-image {
   width: 100px;
   height: 100px;
   border-radius: 20%;
   object-fit: cover;
   margin-bottom: 10px;
-  animation: popIn 0.5s ease-out;
+  animation: liked-popIn 0.5s ease-out;
 }
 
-.match-name {
+.liked-match-name {
   font-size: 16px;
   font-weight: bold;
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* User details section styling */
-.user-details {
+/* User details section */
+.liked-user-details {
+  width: 55%;
   background-color: #f9f9f9;
   border: 1px solid #ccc;
   border-radius: 5px;
   padding: 15px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-  width: 60%;
   position: relative;
-  animation: slideIn 0.5s ease-out;
+  animation: liked-slideIn 0.5s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Photo gallery styling */
-.user-photo {
+.liked-user-photo {
   display: block;
   margin: 0 auto;
-  width: 200px;
-  height: 250px;
+  width: 400px;
+  height: 500px;
   object-fit: cover;
 }
 
-.photo-gallery {
+.liked-photo-gallery {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.nav-button {
+.liked-nav-button {
   background: none;
   border: none;
   font-size: 30px;
@@ -237,29 +275,60 @@ export default {
   transition: color 0.3s;
 }
 
-.nav-button:hover {
+.liked-nav-button:hover {
   color: #ff3399;
 }
 
-.close-button {
-  background: none;
+.liked-close-button {
+  background-color: #ff5a5f;
+  color: white;
   border: none;
-  font-size: 20px;
+  border-radius: 50%;
+  font-size: 25px;
+  width: 40px;
+  height: 40px;
   position: absolute;
   top: 10px;
   right: 10px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.liked-close-button:hover {
+  background-color: #ff3338;
+  transform: scale(1.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.liked-info {
+  text-align: left;
+  width: 100%;
+  padding: 20px;
+  font-size: 20px;
+  margin-left: 350px;
+}
+
+.liked-info h2 {
+  margin: 0;
+  font-weight: bold;
+  font-size: 25px;
+  padding-bottom: 10px;
+  text-align: left;
 }
 
 /* Action buttons styling */
-.action-buttons-modal {
+.liked-action-buttons-modal {
   display: flex;
   justify-content: center;
   gap: 40px;
   margin-top: 20px;
 }
 
-.button {
+.liked-button {
   width: 60px;
   height: 60px;
   border-radius: 50%;
@@ -273,36 +342,36 @@ export default {
   border: none;
 }
 
-.dislike-button {
+.liked-dislike-button {
   background-color: #ff5a5f;
   box-shadow: 0 0 15px rgba(255, 90, 95, 0.3);
 }
 
-.super-like-button {
+.liked-super-like-button {
   background-color: #3498db;
   box-shadow: 0 0 15px rgba(52, 152, 219, 0.3);
 }
 
-.like-button {
+.liked-like-button {
   background-color: #2ecc71;
   box-shadow: 0 0 15px rgba(46, 204, 113, 0.3);
 }
 
-.button:hover {
+.liked-button:hover {
   transform: scale(1.15);
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
-.button:active {
+.liked-button:active {
   transform: scale(0.95);
 }
 
-.button i {
+.liked-button i {
   font-size: 1.5rem;
   color: white;
 }
 
-@keyframes slideInLeft {
+@keyframes liked-slideInLeft {
   from {
     transform: translateX(-100%);
     opacity: 0;
@@ -313,7 +382,7 @@ export default {
   }
 }
 
-@keyframes fadeIn {
+@keyframes liked-fadeIn {
   from {
     opacity: 0;
   }
@@ -322,7 +391,7 @@ export default {
   }
 }
 
-@keyframes popIn {
+@keyframes liked-popIn {
   from {
     transform: scale(0.7);
     opacity: 0;
@@ -333,7 +402,7 @@ export default {
   }
 }
 
-@keyframes slideIn {
+@keyframes liked-slideIn {
   from {
     opacity: 0;
     transform: translateY(20px);
