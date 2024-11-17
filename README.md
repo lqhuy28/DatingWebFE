@@ -1,6 +1,6 @@
 # dating-web
 
-## Project setup
+## Project setup first
 ```
 yarn install
 ```
