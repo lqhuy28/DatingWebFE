@@ -1,4 +1,4 @@
-# dating-app
+# dating-web
 
 ## Project setup
 ```
